@@ -1,11 +1,16 @@
 const defaultTasks = [
-  { id: 1, text: "Upload Versi 1.0 ke github.com/Zehna/fokus-kita-app", priority: "Tinggi", done: true },
-  { id: 2, text: "Uji fitur baru Versi 1.1 (Tema Terang/Gelap & Prioritas)", priority: "Tinggi", done: false },
-  { id: 3, text: "Commit pembaruan Versi 1.1 ke branch main", priority: "Sedang", done: false }
+  { id: 1, text: "Setup repositori Zehna/fokus-kita-app di GitHub", priority: "Tinggi", category: "Dev", done: true },
+  { id: 2, text: "Uji fitur baru Mega Update v2.0 (Statistik, Catatan, Suara)", priority: "Tinggi", category: "Testing", done: false },
+  { id: 3, text: "Tarik semua file v2.0 dari ZIP ke vscode.dev dan Commit", priority: "Sedang", category: "Git", done: false },
+  { id: 4, text: "Coba fitur Ekspor Laporan Tugas (.json)", priority: "Rendah", category: "Fitur", done: false }
 ];
 
-let tasks = JSON.parse(localStorage.getItem("fokuskita_v11_tasks")) || defaultTasks;
+let tasks = JSON.parse(localStorage.getItem("fokuskita_v2_tasks")) || defaultTasks;
+let sessionsCompleted = parseInt(localStorage.getItem("fokuskita_v2_sessions") || "2", 10);
+let minutesFocused = parseInt(localStorage.getItem("fokuskita_v2_minutes") || "50", 10);
 let currentFilter = "all";
+let searchQuery = "";
+let currentModeMinutes = 25;
 let timeLeft = 25 * 60;
 let timerId = null;
 let isRunning = false;
@@ -15,32 +20,42 @@ const startBtn = document.getElementById("startBtn");
 const resetBtn = document.getElementById("resetBtn");
 const taskInput = document.getElementById("taskInput");
 const prioritySelect = document.getElementById("prioritySelect");
+const categorySelect = document.getElementById("categorySelect");
 const addTaskBtn = document.getElementById("addTaskBtn");
+const searchInput = document.getElementById("searchInput");
 const taskList = document.getElementById("taskList");
-const taskCount = document.getElementById("taskCount");
 const themeBtn = document.getElementById("themeBtn");
+const exportBtn = document.getElementById("exportBtn");
+const clearDoneBtn = document.getElementById("clearDoneBtn");
+const quickNotes = document.getElementById("quickNotes");
+const noteStatus = document.getElementById("noteStatus");
 
-function playBeep() {
-  try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = "sine";
-    osc.frequency.setValueAtTime(880, ctx.currentTime);
-    gain.gain.setValueAtTime(0.15, ctx.currentTime);
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.start();
-    osc.stop(ctx.currentTime + 0.4);
-  } catch (e) {}
+// Inisialisasi Kutipan
+function renderQuote() {
+  if (window.getRandomQuote) {
+    const q = window.getRandomQuote();
+    document.getElementById("quoteText").textContent = `"${q.text}"`;
+    document.getElementById("quoteAuthor").textContent = `— ${q.author}`;
+  }
 }
+document.getElementById("nextQuoteBtn").addEventListener("click", renderQuote);
+renderQuote();
 
+// Catatan Cepat Otomatis
+quickNotes.value = localStorage.getItem("fokuskita_v2_notes") || "Catatan proyek hari ini:\n- Struktur modul dipisah ke quotes.js dan sound.js\n- Siap di-commit ke GitHub!";
+quickNotes.addEventListener("input", () => {
+  localStorage.setItem("fokuskita_v2_notes", quickNotes.value);
+  noteStatus.textContent = "Tersimpan otomatis ✓";
+});
+
+// Tema Terang/Gelap
 themeBtn.addEventListener("click", () => {
   document.body.classList.toggle("light-mode");
   const isLight = document.body.classList.contains("light-mode");
   themeBtn.textContent = isLight ? "🌙 Mode Gelap" : "☀️ Mode Terang";
 });
 
+// Timer Pomodoro
 function formatTime(sec) {
   const m = Math.floor(sec / 60).toString().padStart(2, "0");
   const s = (sec % 60).toString().padStart(2, "0");
@@ -54,6 +69,7 @@ function updateTimerDisplay() {
 window.setMode = function(minutes, btnId) {
   clearInterval(timerId);
   isRunning = false;
+  currentModeMinutes = minutes;
   startBtn.textContent = "Mulai";
   timeLeft = minutes * 60;
   updateTimerDisplay();
@@ -77,8 +93,13 @@ startBtn.addEventListener("click", () => {
         clearInterval(timerId);
         isRunning = false;
         startBtn.textContent = "Mulai";
-        playBeep();
-        alert("Waktu sesi selesai!");
+        sessionsCompleted++;
+        minutesFocused += currentModeMinutes;
+        localStorage.setItem("fokuskita_v2_sessions", sessionsCompleted);
+        localStorage.setItem("fokuskita_v2_minutes", minutesFocused);
+        if (window.FokusAudio) window.FokusAudio.playAlarm();
+        renderStats();
+        alert("Sesi selesai! Statistik fokusmu telah diperbarui.");
       }
     }, 1000);
   }
@@ -88,49 +109,75 @@ resetBtn.addEventListener("click", () => {
   clearInterval(timerId);
   isRunning = false;
   startBtn.textContent = "Mulai";
-  timeLeft = 25 * 60;
+  timeLeft = currentModeMinutes * 60;
   updateTimerDisplay();
 });
 
+// Manajemen Tugas & Statistik
 function saveTasks() {
-  localStorage.setItem("fokuskita_v11_tasks", JSON.stringify(tasks));
+  localStorage.setItem("fokuskita_v2_tasks", JSON.stringify(tasks));
+}
+
+function renderStats() {
+  const total = tasks.length;
+  const doneCount = tasks.filter(t => t.done).length;
+  const pct = total === 0 ? 0 : Math.round((doneCount / total) * 100);
+
+  document.getElementById("statSessions").textContent = sessionsCompleted;
+  document.getElementById("statMinutes").textContent = `${minutesFocused}m`;
+  document.getElementById("statDone").textContent = `${doneCount}/${total}`;
+  document.getElementById("statPercent").textContent = `${pct}%`;
+  document.getElementById("progressBar").style.width = `${pct}%`;
 }
 
 window.setFilter = function(filter, btnId) {
   currentFilter = filter;
-  document.querySelectorAll(".filter-tabs button").forEach(b => b.classList.remove("active-mode"));
+  document.querySelectorAll(".filter-group button").forEach(b => b.classList.remove("active-mode"));
   document.getElementById(btnId).classList.add("active-mode");
   renderTasks();
 };
 
+searchInput.addEventListener("input", e => {
+  searchQuery = e.target.value.toLowerCase();
+  renderTasks();
+});
+
 function renderTasks() {
   taskList.innerHTML = "";
   const filtered = tasks.filter(t => {
-    if (currentFilter === "active") return !t.done;
-    if (currentFilter === "done") return t.done;
-    return true;
+    const matchStatus = currentFilter === "all" || (currentFilter === "active" && !t.done) || (currentFilter === "done" && t.done);
+    const matchSearch = t.text.toLowerCase().includes(searchQuery) || (t.category || "").toLowerCase().includes(searchQuery);
+    return matchStatus && matchSearch;
   });
 
   filtered.forEach(task => {
     const prio = task.priority || "Sedang";
+    const cat = task.category || "Umum";
     const li = document.createElement("li");
     li.className = "task-item" + (task.done ? " completed" : "");
     li.innerHTML = `
       <div class="task-left" onclick="toggleTask(${task.id})">
         <input type="checkbox" ${task.done ? "checked" : ""} />
         <span class="prio-badge prio-${prio}">${prio}</span>
+        <span class="cat-badge">${cat}</span>
         <span class="task-title">${task.text}</span>
       </div>
       <button class="delete-btn" onclick="deleteTask(${task.id})">Hapus</button>
     `;
     taskList.appendChild(li);
   });
-  const remaining = tasks.filter(t => !t.done).length;
-  taskCount.textContent = `${remaining} tugas aktif dari total ${tasks.length}`;
+  renderStats();
 }
 
 window.toggleTask = function(id) {
-  tasks = tasks.map(t => t.id === id ? { ...t, done: !t.done } : t);
+  tasks = tasks.map(t => {
+    if (t.id === id) {
+      const nextDone = !t.done;
+      if (nextDone && window.FokusAudio) window.FokusAudio.playSuccess();
+      return { ...t, done: nextDone };
+    }
+    return t;
+  });
   saveTasks();
   renderTasks();
 };
@@ -144,8 +191,15 @@ window.deleteTask = function(id) {
 function addTask() {
   const val = taskInput.value.trim();
   if (!val) return;
-  tasks.push({ id: Date.now(), text: val, priority: prioritySelect.value, done: false });
+  tasks.unshift({
+    id: Date.now(),
+    text: val,
+    priority: prioritySelect.value,
+    category: categorySelect.value,
+    done: false
+  });
   taskInput.value = "";
+  if (window.FokusAudio) window.FokusAudio.playSuccess();
   saveTasks();
   renderTasks();
 }
@@ -153,6 +207,22 @@ function addTask() {
 addTaskBtn.addEventListener("click", addTask);
 taskInput.addEventListener("keypress", e => {
   if (e.key === "Enter") addTask();
+});
+
+clearDoneBtn.addEventListener("click", () => {
+  tasks = tasks.filter(t => !t.done);
+  saveTasks();
+  renderTasks();
+});
+
+exportBtn.addEventListener("click", () => {
+  const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ tasks, notes: quickNotes.value, sessionsCompleted, minutesFocused }, null, 2));
+  const a = document.createElement("a");
+  a.setAttribute("href", dataStr);
+  a.setAttribute("download", "fokuskita_backup.json");
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
 });
 
 updateTimerDisplay();

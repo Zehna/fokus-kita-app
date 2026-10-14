@@ -3,61 +3,120 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FokusKita v1.1 — Task & Pomodoro Tracker</title>
+  <title>FokusKita v2.0 — Productivity Suite</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div class="container">
     <header>
       <div>
-        <h1>FokusKita</h1>
-        <p style="color: var(--muted); font-size: 0.85rem; margin-top: 0.2rem;">Repositori: Zehna/fokus-kita-app</p>
+        <h1>FokusKita 2.0</h1>
+        <p style="color: var(--muted); font-size: 0.82rem; margin-top: 0.2rem;">Workspace Produktivitas • Zehna/fokus-kita-app</p>
       </div>
       <div class="header-actions">
+        <button id="exportBtn">📥 Ekspor JSON</button>
         <button id="themeBtn">☀️ Mode Terang</button>
-        <span class="badge">v1.1.0 • Update</span>
+        <span class="badge">v2.0.0 • Mega Update</span>
       </div>
     </header>
 
+    <div class="quote-banner">
+      <div>
+        <div id="quoteText" class="quote-text">"Kemajuan kecil setiap hari akan menghasilkan hasil yang besar."</div>
+        <div id="quoteAuthor" class="quote-author">— Pepatah Produktivitas</div>
+      </div>
+      <button id="nextQuoteBtn">🎲 Kutipan Lain</button>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card">
+        <div id="statSessions" class="stat-val">2</div>
+        <div class="stat-label">Sesi Fokus Selesai</div>
+      </div>
+      <div class="stat-card">
+        <div id="statMinutes" class="stat-val">50m</div>
+        <div class="stat-label">Total Waktu Fokus</div>
+      </div>
+      <div class="stat-card">
+        <div id="statDone" class="stat-val">1/4</div>
+        <div class="stat-label">Tugas Diselesaikan</div>
+      </div>
+      <div class="stat-card">
+        <div id="statPercent" class="stat-val">25%</div>
+        <div class="stat-label">Progres Hari Ini</div>
+      </div>
+    </div>
+
     <div class="grid">
-      <div class="card">
-        <h2>Pomodoro Timer</h2>
-        <div class="mode-buttons">
-          <button id="btnFokus" class="active-mode" onclick="setMode(25, 'btnFokus')">Fokus 25m</button>
-          <button id="btnShort" onclick="setMode(5, 'btnShort')">Rehat 5m</button>
-          <button id="btnLong" onclick="setMode(15, 'btnLong')">Rehat 15m</button>
+      <div>
+        <div class="card">
+          <h2>⏱️ Pomodoro Timer</h2>
+          <div class="mode-buttons">
+            <button id="btnFokus" class="active-mode" onclick="setMode(25, 'btnFokus')">Fokus 25m</button>
+            <button id="btnShort" onclick="setMode(5, 'btnShort')">Rehat 5m</button>
+            <button id="btnLong" onclick="setMode(15, 'btnLong')">Rehat 15m</button>
+          </div>
+          <div id="timer" class="timer-display">25:00</div>
+          <div class="timer-controls">
+            <button id="startBtn" class="primary">Mulai</button>
+            <button id="resetBtn">Reset</button>
+          </div>
         </div>
-        <div id="timer" class="timer-display">25:00</div>
-        <div class="timer-controls">
-          <button id="startBtn" class="primary">Mulai</button>
-          <button id="resetBtn">Reset</button>
+
+        <div class="card">
+          <h2>
+            <span>📝 Catatan Cepat (Scratchpad)</span>
+            <span id="noteStatus" style="font-size: 0.72rem; color: var(--muted); font-weight: 500;">Tersimpan otomatis</span>
+          </h2>
+          <textarea id="quickNotes" placeholder="Tulis ide, catatan rapat, atau daftar singkat di sini..."></textarea>
         </div>
       </div>
 
-      <div class="card">
-        <h2>Daftar Tugas Proyek</h2>
-        <div class="task-input-group">
-          <input type="text" id="taskInput" placeholder="Tambah tugas baru..." />
-          <select id="prioritySelect">
-            <option value="Tinggi">Prioritas Tinggi</option>
-            <option value="Sedang" selected>Prioritas Sedang</option>
-            <option value="Rendah">Prioritas Rendah</option>
-          </select>
-          <button id="addTaskBtn" class="primary">Tambah</button>
-        </div>
-        <div class="filter-tabs">
-          <button id="fltAll" class="active-mode" onclick="setFilter('all', 'fltAll')">Semua</button>
-          <button id="fltActive" onclick="setFilter('active', 'fltActive')">Aktif</button>
-          <button id="fltDone" onclick="setFilter('done', 'fltDone')">Selesai</button>
-        </div>
-        <ul id="taskList" class="task-list"></ul>
-        <div class="stats">
-          <span id="taskCount">0 tugas aktif</span>
-          <span>Bunyi alarm aktif 🔔</span>
+      <div>
+        <div class="card">
+          <h2>
+            <span>✅ Manajemen Tugas & Progres</span>
+          </h2>
+          <div class="progress-wrap">
+            <div id="progressBar" class="progress-bar"></div>
+          </div>
+
+          <div class="task-input-group">
+            <input type="text" id="taskInput" placeholder="Tambah tugas baru..." />
+            <select id="categorySelect">
+              <option value="Dev">💻 Dev</option>
+              <option value="Git">🌿 Git</option>
+              <option value="Desain">🎨 Desain</option>
+              <option value="Umum">📌 Umum</option>
+            </select>
+            <select id="prioritySelect">
+              <option value="Tinggi">🔥 Tinggi</option>
+              <option value="Sedang" selected>⚡ Sedang</option>
+              <option value="Rendah">🌱 Rendah</option>
+            </select>
+            <button id="addTaskBtn" class="primary">Tambah</button>
+          </div>
+
+          <div class="search-group">
+            <input type="text" id="searchInput" placeholder="🔍 Cari tugas atau kategori..." />
+          </div>
+
+          <div class="filter-tabs">
+            <div class="filter-group" style="display: flex; gap: 0.4rem;">
+              <button id="fltAll" class="active-mode" onclick="setFilter('all', 'fltAll')">Semua</button>
+              <button id="fltActive" onclick="setFilter('active', 'fltActive')">Aktif</button>
+              <button id="fltDone" onclick="setFilter('done', 'fltDone')">Selesai</button>
+            </div>
+            <button id="clearDoneBtn" class="danger-outline">Bersihkan Selesai</button>
+          </div>
+
+          <ul id="taskList" class="task-list"></ul>
         </div>
       </div>
     </div>
   </div>
+  <script src="quotes.js"></script>
+  <script src="sound.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
