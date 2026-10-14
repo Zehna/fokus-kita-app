@@ -227,3 +227,67 @@ exportBtn.addEventListener("click", () => {
 
 updateTimerDisplay();
 renderTasks();
+
+// === FITUR V2.1 ===
+window.addEventListener("DOMContentLoaded", function() {
+  setTimeout(function() {
+    const rBtn = document.getElementById("resetBtn");
+    if (rBtn && !document.getElementById("customMinutes")) {
+      const box = document.createElement("div");
+      box.className = "pomodoro-extras";
+      box.innerHTML = '<div class="custom-timer-box"><label>Kustom (menit):</label><input type="number" id="customMinutes" min="1" max="180" value="25"/><button id="applyCustomTimerBtn" class="btn-extra">Atur</button></div><button id="toggleAmbientBtn" class="btn-extra">🌧️ Suara Fokus: Mati</button>';
+      rBtn.parentElement.parentElement.appendChild(box);
+    }
+
+    const tEl = document.getElementById("timer") || rBtn;
+    if (tEl && !document.getElementById("focusChart")) {
+      const card = document.createElement("div");
+      card.className = "chart-card";
+      card.innerHTML = '<h3>📈 Tren Fokus 7 Hari Terakhir</h3><canvas id="focusChart" height="90"></canvas>';
+      const sec = tEl.closest("section, .card") || tEl.parentElement.parentElement;
+      sec.parentElement.insertBefore(card, sec);
+    }
+
+    const ctx = document.getElementById("focusChart");
+    if (ctx && typeof Chart !== "undefined") {
+      new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels: ["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Hari Ini"],
+          datasets: [{ label: "Menit Fokus", data: [25, 50, 75, 40, 60, 25, typeof minutesFocused !== "undefined" ? minutesFocused : 50], backgroundColor: "rgba(56, 189, 248, 0.7)", borderRadius: 6 }]
+        },
+        options: { responsive: true, plugins: { legend: { display: false } } }
+      });
+    }
+
+    const listEl = document.getElementById("taskList");
+    if (listEl && typeof Sortable !== "undefined") {
+      Sortable.create(listEl, { animation: 150, ghostClass: "sortable-ghost" });
+      listEl.addEventListener("change", function(e) {
+        if (e.target && e.target.type === "checkbox" && e.target.checked && typeof confetti === "function") {
+          confetti({ particleCount: 90, spread: 70, origin: { y: 0.6 } });
+        }
+      });
+    }
+
+    const applyBtn = document.getElementById("applyCustomTimerBtn");
+    const customIn = document.getElementById("customMinutes");
+    if (applyBtn && customIn) {
+      applyBtn.addEventListener("click", function() {
+        const m = parseInt(customIn.value, 10);
+        if (m > 0 && m <= 180) {
+          if (typeof timerId !== "undefined") clearInterval(timerId);
+          if (typeof isRunning !== "undefined") isRunning = false;
+          if (typeof currentModeMinutes !== "undefined") currentModeMinutes = m;
+          if (typeof timeLeft !== "undefined") timeLeft = m * 60;
+          if (typeof updateTimerDisplay === "function") updateTimerDisplay();
+        }
+      });
+    }
+
+    const ambBtn = document.getElementById("toggleAmbientBtn");
+    if (ambBtn && window.toggleAmbientSound) {
+      ambBtn.addEventListener("click", window.toggleAmbientSound);
+    }
+  }, 300);
+});

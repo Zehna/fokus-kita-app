@@ -289,3 +289,13 @@ textarea {
   padding: 0.2rem 0.45rem;
   font-size: 0.78rem;
 }
+
+/* === FITUR V2.1 === */
+.chart-card { background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 1.25rem; margin: 1.25rem 0; }
+.chart-card h3 { margin: 0 0 1rem 0; font-size: 1rem; color: #f8fafc; }
+.pomodoro-extras { margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid rgba(255, 255, 255, 0.08); display: flex; flex-wrap: wrap; gap: 0.75rem; justify-content: center; align-items: center; }
+.custom-timer-box { display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; color: #cbd5e1; }
+.custom-timer-box input { width: 60px; padding: 0.35rem 0.5rem; border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.15); background: #0f172a; color: #38bdf8; text-align: center; font-weight: bold; }
+.btn-extra { padding: 0.4rem 0.85rem; border-radius: 8px; border: 1px solid rgba(56, 189, 248, 0.3); background: rgba(15, 23, 42, 0.8); color: #e2e8f0; cursor: pointer; font-size: 0.85rem; }
+.sortable-ghost { opacity: 0.4; background: rgba(56, 189, 248, 0.15) !important; }
+#taskList li { cursor: grab; }

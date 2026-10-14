@@ -25,3 +25,34 @@ window.FokusAudio = {
     setTimeout(() => this.playTone(783.99, 0.35, "sine"), 400);
   }
 };
+
+// === AMBIENT V2.1 ===
+let ambCtx = null, ambSrc = null, ambPlay = false;
+window.toggleAmbientSound = function() {
+  const btn = document.getElementById("toggleAmbientBtn");
+  if (ambPlay) {
+    if (ambSrc) { try { ambSrc.stop(); } catch(e){} }
+    ambPlay = false;
+    if (btn) btn.textContent = "🌧️ Suara Fokus: Mati";
+    return;
+  }
+  if (!ambCtx) ambCtx = new (window.AudioContext || window.webkitAudioContext)();
+  const buf = ambCtx.createBuffer(1, ambCtx.sampleRate * 3, ambCtx.sampleRate);
+  const data = buf.getChannelData(0);
+  let last = 0;
+  for (let i = 0; i < data.length; i++) {
+    last = (last + (0.02 * (Math.random() * 2 - 1))) / 1.02;
+    data[i] = last * 0.15;
+  }
+  ambSrc = ambCtx.createBufferSource();
+  ambSrc.buffer = buf;
+  ambSrc.loop = true;
+  const filter = ambCtx.createBiquadFilter();
+  filter.type = "lowpass";
+  filter.frequency.value = 800;
+  ambSrc.connect(filter);
+  filter.connect(ambCtx.destination);
+  ambSrc.start();
+  ambPlay = true;
+  if (btn) btn.textContent = "🌧️ Suara Fokus: Aktif";
+};
