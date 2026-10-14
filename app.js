@@ -1,10 +1,11 @@
 const defaultTasks = [
-  { id: 1, text: "Inisialisasi repositori Git lokal", done: true },
-  { id: 2, text: "Buat struktur kode HTML, CSS, dan JS", done: true },
-  { id: 3, text: "Push proyek ke repositori GitHub", done: false }
+  { id: 1, text: "Upload Versi 1.0 ke github.com/Zehna/fokus-kita-app", priority: "Tinggi", done: true },
+  { id: 2, text: "Uji fitur baru Versi 1.1 (Tema Terang/Gelap & Prioritas)", priority: "Tinggi", done: false },
+  { id: 3, text: "Commit pembaruan Versi 1.1 ke branch main", priority: "Sedang", done: false }
 ];
 
-let tasks = JSON.parse(localStorage.getItem("fokuskita_tasks")) || defaultTasks;
+let tasks = JSON.parse(localStorage.getItem("fokuskita_v11_tasks")) || defaultTasks;
+let currentFilter = "all";
 let timeLeft = 25 * 60;
 let timerId = null;
 let isRunning = false;
@@ -13,9 +14,32 @@ const timerEl = document.getElementById("timer");
 const startBtn = document.getElementById("startBtn");
 const resetBtn = document.getElementById("resetBtn");
 const taskInput = document.getElementById("taskInput");
+const prioritySelect = document.getElementById("prioritySelect");
 const addTaskBtn = document.getElementById("addTaskBtn");
 const taskList = document.getElementById("taskList");
 const taskCount = document.getElementById("taskCount");
+const themeBtn = document.getElementById("themeBtn");
+
+function playBeep() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(880, ctx.currentTime);
+    gain.gain.setValueAtTime(0.15, ctx.currentTime);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.4);
+  } catch (e) {}
+}
+
+themeBtn.addEventListener("click", () => {
+  document.body.classList.toggle("light-mode");
+  const isLight = document.body.classList.contains("light-mode");
+  themeBtn.textContent = isLight ? "🌙 Mode Gelap" : "☀️ Mode Terang";
+});
 
 function formatTime(sec) {
   const m = Math.floor(sec / 60).toString().padStart(2, "0");
@@ -27,7 +51,7 @@ function updateTimerDisplay() {
   timerEl.textContent = formatTime(timeLeft);
 }
 
-function setMode(minutes, btnId) {
+window.setMode = function(minutes, btnId) {
   clearInterval(timerId);
   isRunning = false;
   startBtn.textContent = "Mulai";
@@ -35,7 +59,7 @@ function setMode(minutes, btnId) {
   updateTimerDisplay();
   document.querySelectorAll(".mode-buttons button").forEach(b => b.classList.remove("active-mode"));
   document.getElementById(btnId).classList.add("active-mode");
-}
+};
 
 startBtn.addEventListener("click", () => {
   if (isRunning) {
@@ -53,6 +77,8 @@ startBtn.addEventListener("click", () => {
         clearInterval(timerId);
         isRunning = false;
         startBtn.textContent = "Mulai";
+        playBeep();
+        alert("Waktu sesi selesai!");
       }
     }, 1000);
   }
@@ -67,25 +93,40 @@ resetBtn.addEventListener("click", () => {
 });
 
 function saveTasks() {
-  localStorage.setItem("fokuskita_tasks", JSON.stringify(tasks));
+  localStorage.setItem("fokuskita_v11_tasks", JSON.stringify(tasks));
 }
+
+window.setFilter = function(filter, btnId) {
+  currentFilter = filter;
+  document.querySelectorAll(".filter-tabs button").forEach(b => b.classList.remove("active-mode"));
+  document.getElementById(btnId).classList.add("active-mode");
+  renderTasks();
+};
 
 function renderTasks() {
   taskList.innerHTML = "";
-  tasks.forEach(task => {
+  const filtered = tasks.filter(t => {
+    if (currentFilter === "active") return !t.done;
+    if (currentFilter === "done") return t.done;
+    return true;
+  });
+
+  filtered.forEach(task => {
+    const prio = task.priority || "Sedang";
     const li = document.createElement("li");
     li.className = "task-item" + (task.done ? " completed" : "");
     li.innerHTML = `
       <div class="task-left" onclick="toggleTask(${task.id})">
         <input type="checkbox" ${task.done ? "checked" : ""} />
-        <span>${task.text}</span>
+        <span class="prio-badge prio-${prio}">${prio}</span>
+        <span class="task-title">${task.text}</span>
       </div>
       <button class="delete-btn" onclick="deleteTask(${task.id})">Hapus</button>
     `;
     taskList.appendChild(li);
   });
   const remaining = tasks.filter(t => !t.done).length;
-  taskCount.textContent = `${remaining} tugas belum selesai`;
+  taskCount.textContent = `${remaining} tugas aktif dari total ${tasks.length}`;
 }
 
 window.toggleTask = function(id) {
@@ -100,12 +141,10 @@ window.deleteTask = function(id) {
   renderTasks();
 };
 
-window.setMode = setMode;
-
 function addTask() {
   const val = taskInput.value.trim();
   if (!val) return;
-  tasks.push({ id: Date.now(), text: val, done: false });
+  tasks.push({ id: Date.now(), text: val, priority: prioritySelect.value, done: false });
   taskInput.value = "";
   saveTasks();
   renderTasks();

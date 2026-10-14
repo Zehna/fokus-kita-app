@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FokusKita — Task & Pomodoro Tracker</title>
+  <title>FokusKita v1.1 — Task & Pomodoro Tracker</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -11,9 +11,12 @@
     <header>
       <div>
         <h1>FokusKita</h1>
-        <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 0.2rem;">Starter Project Siap GitHub</p>
+        <p style="color: var(--muted); font-size: 0.85rem; margin-top: 0.2rem;">Repositori: Zehna/fokus-kita-app</p>
       </div>
-      <span class="badge">v1.0.0 • Git Ready</span>
+      <div class="header-actions">
+        <button id="themeBtn">☀️ Mode Terang</button>
+        <span class="badge">v1.1.0 • Update</span>
+      </div>
     </header>
 
     <div class="grid">
@@ -35,12 +38,22 @@
         <h2>Daftar Tugas Proyek</h2>
         <div class="task-input-group">
           <input type="text" id="taskInput" placeholder="Tambah tugas baru..." />
+          <select id="prioritySelect">
+            <option value="Tinggi">Prioritas Tinggi</option>
+            <option value="Sedang" selected>Prioritas Sedang</option>
+            <option value="Rendah">Prioritas Rendah</option>
+          </select>
           <button id="addTaskBtn" class="primary">Tambah</button>
+        </div>
+        <div class="filter-tabs">
+          <button id="fltAll" class="active-mode" onclick="setFilter('all', 'fltAll')">Semua</button>
+          <button id="fltActive" onclick="setFilter('active', 'fltActive')">Aktif</button>
+          <button id="fltDone" onclick="setFilter('done', 'fltDone')">Selesai</button>
         </div>
         <ul id="taskList" class="task-list"></ul>
         <div class="stats">
-          <span id="taskCount">0 tugas belum selesai</span>
-          <span>Tersimpan otomatis</span>
+          <span id="taskCount">0 tugas aktif</span>
+          <span>Bunyi alarm aktif 🔔</span>
         </div>
       </div>
     </div>
