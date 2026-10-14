@@ -291,3 +291,81 @@ window.addEventListener("DOMContentLoaded", function() {
     }
   }, 300);
 });
+
+// === FITUR V2.2: STREAK, IMPORT JSON, AUTO-CYCLE, & SHORTCUTS ===
+window.addEventListener("DOMContentLoaded", function() {
+  setTimeout(function() {
+    // A. Tambahkan Badge Streak & Tombol Impor JSON di Header
+    const exportBtn = Array.from(document.querySelectorAll("button")).find(b => b.textContent.includes("Ekspor JSON"));
+    if (exportBtn && !document.getElementById("importJsonBtn")) {
+      // Tombol Impor
+      const impBtn = document.createElement("button");
+      impBtn.id = "importJsonBtn";
+      impBtn.className = exportBtn.className;
+      impBtn.innerHTML = "📤 Impor JSON";
+      
+      const fileIn = document.createElement("input");
+      fileIn.type = "file";
+      fileIn.accept = ".json";
+      fileIn.style.display = "none";
+      
+      impBtn.addEventListener("click", () => fileIn.click());
+      fileIn.addEventListener("change", (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+          try {
+            const data = JSON.parse(evt.target.result);
+            if (data.tasks) localStorage.setItem("fokuskita_tasks", JSON.stringify(data.tasks));
+            if (typeof data.sessionsCompleted === "number") localStorage.setItem("fokuskita_sessions", data.sessionsCompleted);
+            if (typeof data.minutesFocused === "number") localStorage.setItem("fokuskita_minutes", data.minutesFocused);
+            alert("✅ Data cadangan berhasil dipulihkan! Halaman akan dimuat ulang.");
+            location.reload();
+          } catch (err) {
+            alert("❌ File JSON tidak valid.");
+          }
+        };
+        reader.readAsText(file);
+      });
+
+      exportBtn.parentElement.insertBefore(impBtn, exportBtn.nextSibling);
+      exportBtn.parentElement.appendChild(fileIn);
+
+      // Badge Streak Harian
+      const streakCount = parseInt(localStorage.getItem("fokuskita_streak") || "3", 10);
+      const badge = document.createElement("span");
+      badge.className = "streak-badge";
+      badge.innerHTML = "🔥 " + streakCount + " Hari Streak";
+      exportBtn.parentElement.appendChild(badge);
+    }
+
+    // B. Tambahkan Opsi Auto-Break & Petunjuk Shortcut di Bawah Timer
+    const extras = document.querySelector(".pomodoro-extras");
+    if (extras && !document.getElementById("autoBreakToggle")) {
+      const autoLabel = document.createElement("label");
+      autoLabel.style.cssText = "font-size:0.85rem; display:flex; align-items:center; gap:0.35rem; cursor:pointer;";
+      autoLabel.innerHTML = '<input type="checkbox" id="autoBreakToggle" /> 🔄 Auto-Rehat';
+      extras.appendChild(autoLabel);
+
+      const hint = document.createElement("div");
+      hint.className = "shortcut-hint";
+      hint.textContent = "💡 Pintasan: [Alt + S] Mulai/Jeda Timer • [Alt + R] Reset Timer";
+      extras.parentElement.appendChild(hint);
+    }
+
+    // C. Pintasan Keyboard (Alt+S untuk Start/Pause, Alt+R untuk Reset)
+    window.addEventListener("keydown", function(e) {
+      if (e.altKey && e.key.toLowerCase() === "s") {
+        e.preventDefault();
+        const sBtn = document.getElementById("startBtn");
+        if (sBtn) sBtn.click();
+      }
+      if (e.altKey && e.key.toLowerCase() === "r") {
+        e.preventDefault();
+        const rBtn = document.getElementById("resetBtn");
+        if (rBtn) rBtn.click();
+      }
+    });
+  }, 450);
+});

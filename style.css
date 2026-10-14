@@ -299,3 +299,38 @@ textarea {
 .btn-extra { padding: 0.4rem 0.85rem; border-radius: 8px; border: 1px solid rgba(56, 189, 248, 0.3); background: rgba(15, 23, 42, 0.8); color: #e2e8f0; cursor: pointer; font-size: 0.85rem; }
 .sortable-ghost { opacity: 0.4; background: rgba(56, 189, 248, 0.15) !important; }
 #taskList li { cursor: grab; }
+
+/* === FITUR V2.2 (Adaptive Theme, Streak, Import) === */
+.chart-card {
+  background: var(--card-bg, #ffffff);
+  color: var(--text-color, #1e293b);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+body.dark .chart-card, .dark-mode .chart-card {
+  background: rgba(30, 41, 59, 0.85);
+  color: #f8fafc;
+}
+.chart-card h3 {
+  color: inherit !important;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.streak-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: linear-gradient(135deg, #f97316, #ef4444);
+  color: #fff;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+.shortcut-hint {
+  text-align: center;
+  font-size: 0.75rem;
+  opacity: 0.65;
+  margin-top: 0.6rem;
+}
