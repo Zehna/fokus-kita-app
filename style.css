@@ -334,3 +334,75 @@ body.dark .chart-card, .dark-mode .chart-card {
   opacity: 0.65;
   margin-top: 0.6rem;
 }
+
+/* === FITUR V2.3 (Zen Mode, Task Pomodoros, Cloud Sync) === */
+body.zen-mode > *:not(.zen-active-container) {
+  display: none !important;
+}
+.zen-active-card {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 9999 !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  align-items: center !important;
+  background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%) !important;
+  color: #f8fafc !important;
+}
+.zen-active-card #timer {
+  font-size: 6.5rem !important;
+  letter-spacing: 4px !important;
+  margin: 1.5rem 0 !important;
+  color: #38bdf8 !important;
+  text-shadow: 0 0 30px rgba(56, 189, 248, 0.35);
+}
+.pomo-badge-btn {
+  margin-left: auto;
+  margin-right: 0.5rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: rgba(239, 68, 68, 0.12);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  cursor: pointer;
+  transition: transform 0.15s;
+}
+.pomo-badge-btn:hover {
+  transform: scale(1.06);
+  background: rgba(239, 68, 68, 0.22);
+}
+.cloud-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(4px);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+}
+.cloud-modal {
+  background: #1e293b;
+  color: #f8fafc;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  padding: 1.5rem;
+  width: 90%;
+  max-width: 420px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+}
+.cloud-modal input {
+  width: 100%;
+  padding: 0.6rem;
+  margin: 0.4rem 0 1rem 0;
+  border-radius: 8px;
+  border: 1px solid #334155;
+  background: #0f172a;
+  color: #f8fafc;
+  box-sizing: border-box;
+}

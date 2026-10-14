@@ -18,3 +18,8 @@ Pembaruan besar (**Versi 2.0.0**) aplikasi manajemen tugas, statistik fokus hari
 - **↕️ Drag-and-Drop Urutan Tugas (`SortableJS`)**: Geser dan urutkan prioritas daftar tugas secara interaktif.
 - **📤 Impor JSON & 🔥 Daily Streak**: Pulihkan cadangan data dari file `.json` serta pemantau rekor hari produktif berturut-turut.
 - **🎉 Efek Konfeti & Pintasan Keyboard**: Perayaan visual saat tugas tuntas serta pintasan cepat `Alt + S` (Mulai/Jeda) dan `Alt + R` (Reset).
+
+## 🧘 Pembaruan Versi 2.3 (Zen & Cloud Edition)
+- **🧘 Mode Zen Layar Penuh**: Mode fokus bebas distraksi yang menyembunyikan elemen lain dan memperbesar jam Pomodoro (tekan `Esc` untuk keluar).
+- **🎯 Target Sesi Pomodoro per Tugas (`🍅`)**: Lacak jumlah sesi fokus pada setiap tugas (klik kiri untuk tambah progres, klik kanan untuk ubah target).
+- **☁️ Modul Cloud Sync (Supabase Ready)**: Antarmuka pengaturan koneksi database cloud langsung dari aplikasi.

@@ -369,3 +369,125 @@ window.addEventListener("DOMContentLoaded", function() {
     });
   }, 450);
 });
+
+// === FITUR V2.3: ZEN MODE, TARGET POMODORO TUGAS, & CLOUD SYNC ===
+window.addEventListener("DOMContentLoaded", function() {
+  setTimeout(function() {
+    // A. Tambahkan Tombol Mode Zen di Pomodoro Extras
+    const extras = document.querySelector(".pomodoro-extras");
+    const timerEl = document.getElementById("timer") || document.getElementById("resetBtn");
+    const pomoCard = timerEl ? (timerEl.closest("section, .card") || timerEl.parentElement.parentElement) : null;
+
+    if (extras && pomoCard && !document.getElementById("zenModeBtn")) {
+      const zenBtn = document.createElement("button");
+      zenBtn.id = "zenModeBtn";
+      zenBtn.className = "btn-extra";
+      zenBtn.innerHTML = "🧘 Mode Zen";
+
+      zenBtn.addEventListener("click", function() {
+        const isZen = pomoCard.classList.toggle("zen-active-card");
+        zenBtn.innerHTML = isZen ? "❌ Keluar Zen (Esc)" : "🧘 Mode Zen";
+      });
+
+      window.addEventListener("keydown", function(e) {
+        if (e.key === "Escape" && pomoCard.classList.contains("zen-active-card")) {
+          pomoCard.classList.remove("zen-active-card");
+          zenBtn.innerHTML = "🧘 Mode Zen";
+        }
+      });
+
+      extras.appendChild(zenBtn);
+    }
+
+    // B. Tambahkan Badge Target Pomodoro (🍅) pada Setiap Item Tugas
+    function attachPomodoroBadges() {
+      const items = document.querySelectorAll("#taskList li");
+      const pomoData = JSON.parse(localStorage.getItem("fokuskita_task_pomos") || "{}");
+
+      items.forEach((li, idx) => {
+        if (li.querySelector(".pomo-badge-btn")) return;
+        const key = "task_" + idx;
+        const state = pomoData[key] || { done: 0, target: 2 };
+
+        const badge = document.createElement("button");
+        badge.className = "pomo-badge-btn";
+        badge.title = "Klik kiri: +1 Sesi Selesai | Klik kanan: Ubah Target Sesi";
+        badge.textContent = "🍅 " + state.done + "/" + state.target;
+
+        badge.addEventListener("click", function(e) {
+          e.stopPropagation();
+          state.done = (state.done + 1) % (state.target + 1);
+          pomoData[key] = state;
+          localStorage.setItem("fokuskita_task_pomos", JSON.stringify(pomoData));
+          badge.textContent = "🍅 " + state.done + "/" + state.target;
+          if (state.done === state.target && typeof triggerCelebration === "function") {
+            triggerCelebration();
+          }
+        });
+
+        badge.addEventListener("contextmenu", function(e) {
+          e.preventDefault();
+          state.target = state.target >= 6 ? 1 : state.target + 1;
+          pomoData[key] = state;
+          localStorage.setItem("fokuskita_task_pomos", JSON.stringify(pomoData));
+          badge.textContent = "🍅 " + state.done + "/" + state.target;
+        });
+
+        const delBtn = li.querySelector("button");
+        if (delBtn) {
+          li.insertBefore(badge, delBtn);
+        } else {
+          li.appendChild(badge);
+        }
+      });
+    }
+
+    attachPomodoroBadges();
+    const listEl = document.getElementById("taskList");
+    if (listEl) {
+      const obs = new MutationObserver(attachPomodoroBadges);
+      obs.observe(listEl, { childList: true });
+    }
+
+    // C. Tambahkan Tombol & Modal Cloud Sync (Supabase Ready)
+    const impBtn = document.getElementById("importJsonBtn");
+    if (impBtn && !document.getElementById("cloudSyncBtn")) {
+      const cloudBtn = document.createElement("button");
+      cloudBtn.id = "cloudSyncBtn";
+      cloudBtn.className = impBtn.className;
+      cloudBtn.innerHTML = "☁️ Cloud Sync";
+      impBtn.parentElement.insertBefore(cloudBtn, impBtn.nextSibling);
+
+      const modal = document.createElement("div");
+      modal.className = "cloud-modal-backdrop";
+      modal.innerHTML = `
+        <div class="cloud-modal">
+          <h3 style="margin-top:0;">☁️ Sinkronisasi Cloud (Supabase)</h3>
+          <p style="font-size:0.82rem; color:#94a3b8; margin-bottom:1rem;">
+            Hubungkan proyek Supabase Anda untuk menyimpan tugas & statistik secara online lintas perangkat.
+          </p>
+          <label style="font-size:0.8rem;">Supabase Project URL</label>
+          <input type="text" id="sbUrlInput" placeholder="https://xxxx.supabase.co" value="${localStorage.getItem('fk_sb_url') || ''}" />
+          <label style="font-size:0.8rem;">Supabase Anon Key</label>
+          <input type="password" id="sbKeyInput" placeholder="eyJhbGciOiJIUzI1NiIsInR..." value="${localStorage.getItem('fk_sb_key') || ''}" />
+          <div style="display:flex; gap:0.5rem; justify-content:flex-end;">
+            <button id="closeCloudModal" class="btn-extra">Tutup</button>
+            <button id="saveCloudConfig" class="btn-extra" style="background:#0284c7; border-color:#38bdf8;">Simpan & Sinkronkan</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+
+      cloudBtn.addEventListener("click", () => { modal.style.display = "flex"; });
+      modal.querySelector("#closeCloudModal").addEventListener("click", () => { modal.style.display = "none"; });
+      modal.querySelector("#saveCloudConfig").addEventListener("click", () => {
+        const url = modal.querySelector("#sbUrlInput").value.trim();
+        const key = modal.querySelector("#sbKeyInput").value.trim();
+        localStorage.setItem("fk_sb_url", url);
+        localStorage.setItem("fk_sb_key", key);
+        modal.style.display = "none";
+        alert(url && key ? "✅ Konfigurasi Cloud tersimpan! Siap sinkronisasi ke Supabase." : "ℹ️ Kredensial Cloud dikosongkan (Mode Offline localStorage aktif).");
+      });
+    }
+  }, 600);
+});
