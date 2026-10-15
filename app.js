@@ -491,3 +491,78 @@ window.addEventListener("DOMContentLoaded", function() {
     }
   }, 600);
 });
+
+// === FITUR V2.4 ===
+(function() {
+  try {
+    var code = 'var ids={};self.onmessage=function(e){var d=e.data;if(d.cmd==="start")ids[d.id]=setInterval(function(){self.postMessage({id:d.id})},d.ms);else if(d.cmd==="stop"){clearInterval(ids[d.id]);delete ids[d.id]}};';
+    var worker = new Worker(URL.createObjectURL(new Blob([code], {type:'application/javascript'})));
+    var cbs = {}, seq = 1000, origClr = window.clearInterval;
+    window.setInterval = function(fn, ms) { var id = ++seq; cbs[id] = fn; worker.postMessage({cmd:'start', id:id, ms:ms||1000}); return id; };
+    window.clearInterval = function(id) { if(cbs[id]){ delete cbs[id]; worker.postMessage({cmd:'stop', id:id}); } else origClr(id); };
+    worker.onmessage = function(e) { if(cbs[e.data.id]) cbs[e.data.id](); };
+  } catch(e) {}
+})();
+
+window.addEventListener('DOMContentLoaded', function() {
+  setTimeout(function() {
+    var ver = Array.from(document.querySelectorAll('span')).find(function(el){ return el.textContent.includes('v2.0.0'); });
+    if (ver) ver.textContent = 'v2.4.0 • Worker & Matrix';
+
+    var timerEl = document.getElementById('timer');
+    var extras = document.querySelector('.pomodoro-extras');
+    if (extras && !document.getElementById('notifyPermBtn')) {
+      var nBtn = document.createElement('button');
+      nBtn.id = 'notifyPermBtn';
+      nBtn.className = 'btn-extra';
+      nBtn.textContent = ('Notification' in window && Notification.permission === 'granted') ? '🔔 Notifikasi: Aktif' : '🔕 Aktifkan Notifikasi';
+      nBtn.onclick = function() {
+        if (!('Notification' in window)) return alert('Browser tidak mendukung notifikasi.');
+        Notification.requestPermission().then(function(p) {
+          nBtn.textContent = p === 'granted' ? '🔔 Notifikasi: Aktif' : '🔕 Ditolak';
+        });
+      };
+      extras.appendChild(nBtn);
+    }
+
+    if (timerEl) {
+      new MutationObserver(function() {
+        var v = timerEl.textContent.trim();
+        document.title = (typeof isRunning !== 'undefined' && isRunning) ? '(' + v + ') 🎯 FokusKita' : 'FokusKita 2.4';
+      }).observe(timerEl, { childList: true, characterData: true, subtree: true });
+    }
+
+    var listEl = document.getElementById('taskList');
+    if (listEl && !document.getElementById('eisenhowerGrid')) {
+      var bar = document.createElement('div');
+      bar.className = 'view-switcher-bar';
+      bar.innerHTML = '<span style="font-size:0.8rem;opacity:0.75;">Mode Tampilan:</span><div style="display:flex;gap:0.4rem;"><button id="viewListBtn" class="btn-extra">📋 Daftar</button><button id="viewMatrixBtn" class="btn-extra">⊞ Matriks Eisenhower</button></div>';
+      listEl.parentElement.insertBefore(bar, listEl);
+
+      var grid = document.createElement('div');
+      grid.id = 'eisenhowerGrid';
+      grid.className = 'eisenhower-grid';
+      listEl.parentElement.insertBefore(grid, listEl.nextSibling);
+
+      function renderMatrix() {
+        var arr = (typeof tasks !== 'undefined' && Array.isArray(tasks)) ? tasks : JSON.parse(localStorage.getItem('fokuskita_tasks') || '[]');
+        var q1=[], q2=[], q3=[], q4=[];
+        arr.forEach(function(t) {
+          var txt = t.text || t.title || 'Tugas';
+          var p = (t.priority || '').toLowerCase();
+          if (t.completed || t.done) q4.push(txt);
+          else if (p.includes('tinggi') || p.includes('high')) q1.push(txt);
+          else if (p.includes('sedang') || p.includes('med')) q2.push(txt);
+          else q3.push(txt);
+        });
+        var fmt = function(a) { return a.length ? a.map(function(x){return '<li>'+x+'</li>';}).join('') : '<li style="opacity:0.5">Kosong</li>'; };
+        grid.innerHTML = '<div class="matrix-quadrant q-do"><h4>🔥 I. Penting & Mendesak</h4><ul>'+fmt(q1)+'</ul></div>' +
+                         '<div class="matrix-quadrant q-schedule"><h4>📅 II. Penting & Terjadwal</h4><ul>'+fmt(q2)+'</ul></div>' +
+                         '<div class="matrix-quadrant q-delegate"><h4>⚡ III. Eksekusi Cepat</h4><ul>'+fmt(q3)+'</ul></div>' +
+                         '<div class="matrix-quadrant q-done"><h4>✅ IV. Selesai</h4><ul>'+fmt(q4)+'</ul></div>';
+      }
+      document.getElementById('viewListBtn').onclick = function() { listEl.style.display = ''; grid.classList.remove('active'); };
+      document.getElementById('viewMatrixBtn').onclick = function() { renderMatrix(); listEl.style.display = 'none'; grid.classList.add('active'); };
+    }
+  }, 700);
+});

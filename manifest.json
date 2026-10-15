@@ -1,0 +1,8 @@
+{
+  "name": "FokusKita v2.4",
+  "short_name": "FokusKita",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#38bdf8"
+}
